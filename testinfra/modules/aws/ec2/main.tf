@@ -37,12 +37,9 @@ resource "aws_instance" "this" {
   subnet_id         = var.subnet_ids[count.index]
   key_name          = var.keypair_name
   vpc_security_group_ids = [aws_security_group.ec2.id]
+  user_data         = file("install_apache.sh")
 
   associate_public_ip_address = var.associate_public_ip_address 
-
-  provisioner "local-exec" {
-    command = var.command_line
-  }
 
   tags = merge(
     var.tags,

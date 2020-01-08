@@ -42,8 +42,6 @@ module "ec2_test" {
   
   keypair_name       = var.keypair_name
 
-  command_line       = "yum -y install httpd php;chkconfig httpd on;systemctl start httpd.service;cd /var/www/html;wget https://s3-us-west-2.amazonaws.com/us-west-2-aws-training/awsu-spl/spl-03/scripts/examplefiles-elb.zip;unzip examplefiles-elb.zip"
-
   tags = {
     "TerraformManaged" = "true"
   }
@@ -72,8 +70,6 @@ module "ec2_test_pri" {
   egress_cidr_blocks = ["0.0.0.0/0"] 
   
   keypair_name       = var.keypair_name
-
-  command_line       = "" 
 
   tags = {
     "TerraformManaged" = "true"
