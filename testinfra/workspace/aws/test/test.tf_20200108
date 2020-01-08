@@ -1,0 +1,48 @@
+locals { 
+  azs              = ["eu-west-3a", "eu-west-3b"]
+}
+
+module "vpc" {
+  source = "../../../modules/aws/vpc"
+
+  name = "test"
+  cidr = "10.1.0.0/16"
+
+  azs              = local.azs
+  public_subnets   = ["10.1.0.0/24", "10.1.1.0/24"] 
+  private_subnets  = ["10.1.2.0/24", "10.1.3.0/24"]
+  database_subnets = ["10.1.4.0/24", "10.1.5.0/24"]
+
+  tags = {
+    "TerraformManaged" = "true"
+  }
+}
+
+module "ec2_test" {
+  source = "../../../modules/aws/ec2"
+
+  name   = "webec2_test"
+  vpc_id = module.vpc.vpc_id
+
+  ec2_count = 2
+
+  ami                 = data.aws_ami.amazon_linux.id
+  azs                 = local.azs
+  subnet_ids          = flatten([module.vpc.public_subnets_ids])
+  
+  ingress_from_ports  = 80
+  ingress_to_ports    = 80
+  ingress_protocol    = "tcp"
+  ingress_cidr_blocks = ["0.0.0.0/0"]
+  
+  egress_from_ports  = 0
+  egress_to_ports    = 0
+  egress_protocol    = "-1"
+  egress_cidr_blocks = ["0.0.0.0/0"] 
+  
+  keypair_name        = var.keypair_name
+
+  tags = {
+    "TerraformManaged" = "true"
+  }
+}

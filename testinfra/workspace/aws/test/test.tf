@@ -1,67 +1,196 @@
 locals { 
   azs              = ["eu-west-3a", "eu-west-3b"]
-  public_subnets   = ["10.1.0.0/24", "10.1.1.0/24"]
 }
 
-# module키워드를 사용해서 vpc module을 정의한다.
 module "vpc" {
-  # source는 variables.tf, main.tf, outputs.tf 파일이 위치한 디렉터리 경로를 넣어준다.
   source = "../../../modules/aws/vpc"
 
-  # VPC이름을 넣어준다. 이 값은 VPC module이 생성하는 모든 리소스 이름의 prefix가 된다.
   name = "test"
-  # VPC의 CIDR block을 정의한다.
   cidr = "10.1.0.0/16"
 
-  # VPC가 사용할 AZ를 정의한다.
   azs              = local.azs
-  # VPC의 Public Subnet CIDR block을 정의한다.
-  public_subnets   = local.public_subnets
-  # VPC의 Private Subnet CIDR block을 정의한다.
+  public_subnets   = ["10.1.0.0/24", "10.1.1.0/24"] 
   private_subnets  = ["10.1.2.0/24", "10.1.3.0/24"]
-  # VPC의 Private DB Subnet CIDR block을 정의한다. (RDS를 사용하지 않으면 이 라인은 필요없다.)
   database_subnets = ["10.1.4.0/24", "10.1.5.0/24"]
 
-  # VPC module이 생성하는 모든 리소스에 기본으로 입력될 Tag를 정의한다.
   tags = {
     "TerraformManaged" = "true"
   }
 }
 
-# module 키워드를 사용해서 vpc ec2을 정의한다.
 module "ec2_test" {
-  # source는 variables.tf, main.tf, outputs.tf 파일이 위치한 디렉터리 경로를 넣어준다.
   source = "../../../modules/aws/ec2"
 
-  # VPC이름을 넣어준다. 이 값은 ec2 module이 생성하는 모든 리소스 이름의 prefix가 된다.
   name   = "webec2_test"
-  # module.vpc에서 생성된 vpc_id가 입력된다.
   vpc_id = module.vpc.vpc_id
 
-  # ec2 생성 개수
   ec2_count = 2
 
-  # 최신 버전의 amazon_linux AMI id가 입력된다.
   ami                 = data.aws_ami.amazon_linux.id
-  # ec2을 생성할 AZ을 정의한다.
   azs                 = local.azs
-  # ec2을 생성할 subnet id를 정의한다.
   subnet_ids          = flatten([module.vpc.public_subnets_ids])
-  # ec2에서 inbound 허용할 정책 
+  
   ingress_from_ports  = 80
   ingress_to_ports    = 80
   ingress_protocol    = "tcp"
   ingress_cidr_blocks = ["0.0.0.0/0"]
-  # ec2에서 inbound 허용할 정책 
+  
   egress_from_ports  = 0
   egress_to_ports    = 0
   egress_protocol    = "-1"
   egress_cidr_blocks = ["0.0.0.0/0"] 
-  # ec2 SSH 접속에 사용할 keypair_name을 var.keypair_name의 값으로 정의한다.
-  keypair_name        = var.keypair_name
+  
+  keypair_name       = var.keypair_name
 
-  # ec2 module이 생성하는 모든 리소스에 기본으로 입력될 Tag를 정의한다.
+  command_line       = "yum -y install httpd php;chkconfig httpd on;systemctl start httpd.service;cd /var/www/html;wget https://s3-us-west-2.amazonaws.com/us-west-2-aws-training/awsu-spl/spl-03/scripts/examplefiles-elb.zip;unzip examplefiles-elb.zip"
+
   tags = {
     "TerraformManaged" = "true"
   }
+}
+
+module "ec2_test_pri" {
+  source = "../../../modules/aws/ec2"
+
+  name   = "wasec2_test"
+  vpc_id = module.vpc.vpc_id
+
+  ec2_count = 2
+
+  ami                 = data.aws_ami.amazon_linux.id
+  azs                 = local.azs
+  subnet_ids          = flatten([module.vpc.private_subnets_ids])
+  
+  ingress_from_ports  = 80
+  ingress_to_ports    = 80
+  ingress_protocol    = "tcp"
+  ingress_cidr_blocks = ["0.0.0.0/0"]
+  
+  egress_from_ports  = 0
+  egress_to_ports    = 0
+  egress_protocol    = "-1"
+  egress_cidr_blocks = ["0.0.0.0/0"] 
+  
+  keypair_name       = var.keypair_name
+
+  command_line       = "" 
+
+  tags = {
+    "TerraformManaged" = "true"
+  }
+}
+
+module "alb" {
+  source  = "../../../modules/aws/elb"
+  
+  name = "my-alb"
+
+  load_balancer_type = "application"
+
+  vpc_id             = module.vpc.vpc_id 
+  subnets            = flatten([module.vpc.public_subnets_ids]) 
+  security_groups    = module.ec2_test.ec2_sg_id
+ 
+
+  access_logs = {
+    bucket = "my-alb-logs"
+  }
+
+  target_groups = [
+    {
+      name_prefix      = "default"
+      backend_protocol = "HTTP"
+      backend_port     = 80
+      target_type      = "instance"
+    }
+  ]
+
+  http_tcp_listeners = [
+    {
+      port               = 80
+      protocol           = "HTTP"
+      target_group_index = 0
+    }
+  ]
+
+  tags = {
+    "TerraformManaged" = "true"
+  }
+}
+
+module "mysql_test" {
+  source  = "../../../modules/aws/db"
+
+  identifier = "mysqltest"
+
+  engine            = "mysql"
+  engine_version    = "5.7.19"
+  instance_class    = "db.t2.large"
+  allocated_storage = 5
+
+  name     = "demodb"
+  username = "user"
+  password = "Bespin1!"
+  port     = "3306"
+
+  iam_database_authentication_enabled = true
+
+  vpc_security_group_ids = [module.vpc.default_security_group_id]
+
+  maintenance_window = "Mon:00:00-Mon:03:00"
+  backup_window      = "03:00-06:00"
+
+  # Enhanced Monitoring - see example for details on how to create the role
+  # by yourself, in case you don't want to create it automatically
+  monitoring_interval = "30"
+  monitoring_role_name = "MyRDSMonitoringRole"
+  create_monitoring_role = true
+
+  tags = {
+    Owner       = "user"
+    Environment = "dev"
+  }
+
+  # DB subnet group
+  subnet_ids = flatten([module.vpc.database_subnets_ids])
+
+  # DB parameter group
+  family = "mysql5.7"
+
+  # DB option group
+  major_engine_version = "5.7"
+
+  # Snapshot name upon DB deletion
+  final_snapshot_identifier = "demodb"
+
+  # Database Deletion Protection
+  deletion_protection = false	 
+
+  parameters = [
+    {
+      name = "character_set_client"
+      value = "utf8"
+    },
+    {
+      name = "character_set_server"
+      value = "utf8"
+    }
+  ]
+
+  options = [
+    {
+      option_name = "MARIADB_AUDIT_PLUGIN"
+
+      option_settings = [
+        {
+          name  = "SERVER_AUDIT_EVENTS"
+          value = "CONNECT"
+        },
+        {
+          name  = "SERVER_AUDIT_FILE_ROTATIONS"
+          value = "37"
+        },
+      ]
+    },
+  ]
 }

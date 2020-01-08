@@ -40,6 +40,10 @@ resource "aws_instance" "this" {
 
   associate_public_ip_address = var.associate_public_ip_address 
 
+  provisioner "local-exec" {
+    command = var.command_line
+  }
+
   tags = merge(
     var.tags,
     {

@@ -94,6 +94,12 @@ variable "egress_to_ports" {
   default     = 0
 }
 
+variable "command_line" {
+  description = "EC2 시작할 때 실행할 명령어"
+  type        = string 
+  default     = "" 
+}
+
 variable "tags" {
   description = "모든 리소스에 추가되는 tag 맵"
   type        = map(string)
