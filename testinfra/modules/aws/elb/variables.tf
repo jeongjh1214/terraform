@@ -147,3 +147,9 @@ variable "vpc_id" {
   type        = string
   default     = null
 }
+
+variable "target_id" {
+  description = "target_instance_id"
+  type        = list(string)
+}
+
