@@ -11,7 +11,7 @@ command2 = os.popen("aws ec2 describe-tags --query Tags[*]")
 ec2infos = json.load(command)
 ec2tagsinfos = json.load(command2)
 
-#deleteon 있는 서버
+# deleteon 있는 서버
 deloninstanceids = []
 
 # deleteon 없는 서버
@@ -28,6 +28,7 @@ for ec2info in ec2infos:
                 if "DeleteOn".lower() in ec2tag['Key'].lower():
                     delcount+=1
 
+            # tags 에서 deleteon 태그 여부 확인, 여러개 있을 경우에는 예외상태로 설정
             if delcount == 0:
                 deloninstanceids2.append(ec2in['InstanceId'])
             elif delcount == 1:
@@ -35,6 +36,8 @@ for ec2info in ec2infos:
             elif delcount > 1:
                 print ("delete 설정이 여러개 되어있습니다")
 
+
+# deleteon 설정된 서버들에 대해서 처리
 for delinstance in deloninstanceids:
     for ec2tags in ec2tagsinfos:
         if (ec2tags['ResourceType']) == 'instance' and (ec2tags['ResourceId']) == delinstance and (ec2tags['Key']).lower() == ('deleteon').lower():
@@ -45,6 +48,8 @@ for delinstance in deloninstanceids:
                 os.system('aws ec2 stop-instances --instance-ids %s' %delinstance)
                 print (delinstance + " Stop1")
 
+
+# tags 가 전혀 없는 서버들에 대해 처리
 for delinstance1 in deloninstanceids2:
     os.system('aws ec2 stop-instances --instance-ids %s' %delinstance1)
     print (delinstance1 + " Stop2")
