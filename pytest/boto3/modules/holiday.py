@@ -5,11 +5,16 @@ from urllib.parse import urlencode, quote_plus
 import requests
 import xml.etree.ElementTree as ET
 import datetime
+from pytz import timezone
+
+
+now_utc = datetime.datetime.now(timezone('UTC'))
+now_kst = now_utc.astimezone(timezone('Asia/Seoul'))
 
 def holidaycheck():
-    nowYear = datetime.datetime.now().strftime("%Y")
-    nowMonth = datetime.datetime.now().strftime("%m")
-    nowDay = datetime.datetime.now().strftime("%d")
+    nowYear = now_kst.strftime("%Y")
+    nowMonth = now_kst.strftime("%m")
+    nowDay = now_kst.strftime("%d")
     
     allday = str(nowYear) + str(nowMonth) + str(nowDay)
 
