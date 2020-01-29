@@ -5,14 +5,25 @@ metadata="curl -s http://169.254.169.254/latest/meta-data"
 
 region=`${metadata}/placement/availability-zone`
 hostname=`${metadata}/hostname`
-AMI=`${metadata}/ami-id`
 instancetype=`${metadata}/instance-type`
 diskinfos=${metadata}/block-device-mapping/
 privateip=`${metadata}/local-ipv4`
 iamrule=`${metadata}/iam/info | grep Arn | awk -F '/' '{print $NF}' | awk -F '"' '{print $1}'`
 
+# region change
 if [ `echo ${region} | grep ap-northeast-2` ]; then
 	region='apne2'
+fi
+
+# OS
+if [ `which yum` ]; then
+	if [ -f '/etc/redhat-release' ]; then
+		OS=`cat /etc/redhat-release`
+	else
+		OS=`uname -r | awk -F '.' '{print $5}'`
+	fi
+elif [ `which apt-get` ]; then
+	OS=`cat /etc/issue`
 fi
 
 # Disk Check
@@ -26,8 +37,6 @@ do
 	# Swap Check
 	if [ `swapon | grep ${diskinfo} | wc -l` != 0 ]; then
 		Swap=`swapon | grep ${diskinfo} | awk '{print $3}'` 
-	else
-		Swap=''
 	fi
 
 	# Root Partition
@@ -39,5 +48,4 @@ do
 
 done
 
-
-echo "1,prd,${region},${hostname},${AMI},${instancetype},${privateip},${rootvolume},${iamrule},${DATAVolume},${Swap}"
+echo "1,prd,${region},${hostname},${OS},${instancetype},${privateip},${rootvolume},${iamrule},${DATAVolume},${Swap}"
