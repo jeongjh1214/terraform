@@ -17,4 +17,5 @@ worksheet = doc.worksheet('시트1')
 
 def insert_data(cell, context):
     worksheet.update_acell(cell,context)
+    print (str(cell) + " 입력 완료되었습니다")
 

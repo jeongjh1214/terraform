@@ -5,6 +5,7 @@ import boto3
 
 ec2 = boto3.client('ec2')
 
+
 def regions_list():
     regions = ['eu-north-1', 'ap-south-1', 'eu-west-3', 'eu-west-2', 'eu-west-1', 'ap-northeast-2', 'ap-northeast-1', 'sa-east-1', 'ca-central-1', 'ap-southeast-1', 'ap-southeast-2', 'eu-central-1', 'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2']
 
@@ -52,4 +53,7 @@ def fullname_check(InstanceId,region):
     else:
         return (response)
 
-
+# ImageId 
+#ee = boto3.resource('ec2')
+#ss = ee.Instance('i-07e3896686bef2f7d').image_id
+#print (ss)

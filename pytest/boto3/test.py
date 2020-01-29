@@ -7,7 +7,7 @@ from modules.holiday import holidaycheck
 
 ec2 = boto3.client('ec2')
 
-response = ec2.describe_regions()
+test = boto3.resource('ec2', region_name='ap-northeast-2').instances.all()
 
-a = [c['RegionName'] for c in response['Regions']] 
-print (a)
+for i in test:
+    print (i)
