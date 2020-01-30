@@ -14,6 +14,7 @@ def lenrule(arn):
 
     return (len(response['Rules']))
 
+
 def makealbrule(arn,sourcefile,targetfile):
     client = boto3.client('elbv2')
 
@@ -39,4 +40,3 @@ def makealbrule(arn,sourcefile,targetfile):
         )
     
         return (response)
-    
