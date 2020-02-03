@@ -6,8 +6,9 @@ from botocore.exceptions import ClientError
 from lib import elbboto 
 
 
-arn = 'arn:aws:elasticloadbalancing:ap-northeast-2:584946075280:listener/app/test/6128197d9dabd7c7/8fe4383c24dc1d92'
+arn = 'arn:aws:elasticloadbalancing:ap-northeast-2:779475221336:listener/app/alb-an2-jaehoon-bototest/03690c817c2afce0/36817b103e314794'
 sourcefile = "test.txt"
 targetfile = "target.txt"
+startnum = 1
 
-elbboto.makealbrule(arn,sourcefile,targetfile)
+elbboto.makealbrule(arn,sourcefile,targetfile,startnum)

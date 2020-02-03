@@ -1,5 +1,6 @@
 #!/bin/python3
 
+import sys
 from urllib import parse
 import re
 
@@ -12,6 +13,16 @@ def querysplit(query):
 
     return (querymap)
 
+def filenum(filename):
+    pattern = re.compile(r'\s+')
+    with open(filename) as f:
+        for i, l in enumerate(f):
+            if (re.sub(pattern, '', l.rstrip('\n'))) == '':
+                return ("%s 에 빈 줄이 있습니다" %(filename))
+                sys.exit()
+            pass
+
+        return (i + 1)
 
 def queryConfiglist(filename):
     f = open(filename, 'r')
@@ -34,6 +45,7 @@ def queryConfiglist(filename):
 
     f.close()
     return (allquerymap)
+
 
 def redirectConfig(filename):
     f = open(filename, 'r')

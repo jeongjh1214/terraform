@@ -15,8 +15,12 @@ def lenrule(arn):
     return (len(response['Rules']))
 
 
-def makealbrule(arn,sourcefile,targetfile):
+def makealbrule(arn,sourcefile,targetfile,startnum):
     client = boto3.client('elbv2')
+
+    if split.filenum(sourcefile) != split.filenum(targetfile):
+        print ("%s 와 %s 파일의 라인 수가 맞지 않습니다" %(sourcefile,targetfile))
+        sys.exit()
 
     if lenrule(arn) + len(split.queryConfiglist(sourcefile)) > 99:
         print ("기존 정책 및 추가될 정책 생성 시 제한 초과합니다. (최대 100개 기준)")
@@ -35,7 +39,7 @@ def makealbrule(arn,sourcefile,targetfile):
         response = client.create_rule(
                 ListenerArn = arn, 
                 Conditions = [{'Field' : 'query-string', 'QueryStringConfig': {'Values' : [conditionconfig]}}],
-                Priority= 1+i,
+                Priority= startnum+i,
                 Actions = [{'Type' : 'redirect', 'Order' : 1, 'RedirectConfig': actionconfig}], 
         )
     
