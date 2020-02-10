@@ -129,3 +129,58 @@ def asinfos(tag):
         asinfos.append([GroupName,LaunchConfig])
             
     return (asinfos)
+
+def elbtagcheck():
+    client = boto3.client('elbv2')
+
+    elbtags = client.describe_tags(
+        ResourceArns=[
+            'arn:aws:elasticloadbalancing:ap-northeast-2:779475221336:loadbalancer/net/nlb/69df28513080e0a9', 'arn:aws:elasticloadbalancing:ap-northeast-2:779475221336:loadbalancer/net/nlb-an2-ss-newrelic/aed9dd9a22dab032', 'arn:aws:elasticloadbalancing:ap-northeast-2:779475221336:loadbalancer/app/alb/d69fbe12db044ac5'
+        ]
+    )['TagDescriptions']
+
+    return (elbtags)
+
+
+def allelbArn():
+    client = boto3.client('elbv2')
+
+    elbinfos = client.describe_load_balancers()['LoadBalancers']
+    elbArn = [i['LoadBalancerArn'] for i in elbinfos]
+    return (elbArn)
+
+def allelb():
+    client = boto3.client('elbv2')
+
+    elbinfos = client.describe_load_balancers()['LoadBalancers']
+    
+    return (elbinfos)
+    
+def test():
+    client = boto3.client('elbv2')
+    response = client.describe_listeners(
+        LoadBalancerArn='arn:aws:elasticloadbalancing:ap-northeast-2:779475221336:loadbalancer/app/alb/d69fbe12db044ac5',
+    )
+
+    return (response)
+
+def test1():
+    client = boto3.client('elbv2')
+    response = client.describe_target_health(
+        TargetGroupArn='arn:aws:elasticloadbalancing:ap-northeast-2:779475221336:targetgroup/albtarget/d2d38a4426370a1d'
+    )
+
+    return (response)
+
+
+def test3():
+    client = boto3.client('ec2')
+    response = client.describe_snapshots(
+
+        MaxResults=10
+    )
+
+    return (response['Snapshots'])
+
+for i in test3():
+    print (i['VolumeId'])
