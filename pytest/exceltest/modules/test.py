@@ -33,24 +33,37 @@ def instagcheck(instanceid):
 def tagcheckInsert(response):
     ec2 = boto3.client('ec2')
     for a in response['Snapshots']:
-        volume = boto3.resource('ec2').Volume(a.get('VolumeId'))
-        try:
-            instanceid = instagcheck(volume.attachments[0]['InstanceId']) 
-        except ClientError:
-            instanceid = ''
+        if not a.get('Tags'):
+            instanceid = insidsplit(a['Description']) 
+            if instanceid:
+                inschk = instagcheck(instanceid)
+                if inschk:
+                    CreateTags(inschk[0],a.get('SnapshotId'))
+                    print (("%s Tag를 %s SnapshotID에 입력하였습니다") %(inschk[0], a.get('SnapshotId')))
+                else:
+                    pass
+        else:
+            if systemTagcheck(a.get('Tags')) > 1:
+                pass
+            else:
+                instanceid = insidsplit(a['Description']) 
+                if instanceid:
+                    inschk = instagcheck(instanceid)
+                    if inschk:
+                        CreateTags(inschk[0],a.get('SnapshotId'))
+                        print (("%s Tag를 %s SnapshotID에 입력하였습니다") %(inschk[0], a.get('SnapshotId')))
+                else:
+                    pass
 
-        if instanceid:
-            CreateTags(instanceid[0],a.get('SnapshotId'))
-            print (("%s Tag를 %s SnapshotID에 입력하였습니다") %(instanceid[0], a.get('SnapshotId')))
 
 def createSnapshotTag():
     ec2 = boto3.client('ec2')
-    response = ec2.describe_snapshots(OwnerIds=['self'],MaxResults=1000)
+    response = ec2.describe_snapshots(OwnerIds=['self'],MaxResults=100)
     tagcheckInsert(response)
 
     while True: 
         ntoken = response['NextToken']
-        response = ec2.describe_snapshots(OwnerIds=['self'],MaxResults=1000,NextToken=ntoken)
+        response = ec2.describe_snapshots(OwnerIds=['self'],MaxResults=100,NextToken=ntoken)
         tagcheckInsert(response)
         try:
             test = response['NextToken']
@@ -59,30 +72,15 @@ def createSnapshotTag():
             sys.exit()
         
 
-def amiinscheck(abc):
+def test():
     ec2 = boto3.client('ec2')
-    response = ec2.describe_snapshots(OwnerIds=['self'],SnapshotIds=[abc])
+    response = ec2.describe_snapshots(OwnerIds=['self'],MaxResults=100)
     for i in response['Snapshots']:
         volume = boto3.resource('ec2').Volume(i.get('VolumeId'))
         try:
-            return (instagcheck(volume.attachments[0]['InstanceId']))
+            print (instagcheck(volume.attachments[0]['InstanceId']))
         except ClientError:
-            pass 
-
-def amitagcreate():
-    ec2 = boto3.client('ec2')
-    ec2r = boto3.resource('ec2')
-    response = ec2.describe_images(Owners=['self'])
-    for i in response['Images']:
-        for j in i['BlockDeviceMappings']:
-            tag = amiinscheck(j['Ebs']['SnapshotId'])
-            if tag:
-                img = ec2r.Image(i['ImageId'])
-                imgtag = img.create_tags(Tags=[{'Key': 'System', 'Value' : tag[0]}])
-                print ("%s 이미지 태그 %s 등록하였습니다." %(i['ImageId'],imgtag))
-
-
-
-
+            print ("abc")
 #createSnapshotTag()
-#amitagcreate()
+
+test()
