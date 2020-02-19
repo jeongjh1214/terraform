@@ -1,5 +1,5 @@
 #!/bin/python3
-
+import sys
 from modules import excel, ec2infos 
 
 # 엑셀파일 생성

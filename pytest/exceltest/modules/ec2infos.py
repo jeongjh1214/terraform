@@ -113,7 +113,7 @@ def asinfos(tag):
             },
             {
                 'Name' : 'key',
-                'Values' : ['system']
+                'Values' : ['System']
             }
         ]
     )
@@ -124,11 +124,29 @@ def asinfos(tag):
     asinfos = []
     for i in astag['Tags']:
         GroupName = i['ResourceId']
-        asinfo = client.describe_auto_scaling_groups(AutoScalingGroupNames=[GroupName])
-        LaunchConfig = asinfo['AutoScalingGroups'][0]['LaunchConfigurationName']
-        asinfos.append([GroupName,LaunchConfig])
-            
-    return (asinfos)
+        #asinfo = client.describe_auto_scaling_groups(AutoScalingGroupNames=[GroupName])
+        asinfo2 = client.describe_policies(AutoScalingGroupName=GroupName)
+        #LaunchConfig = asinfo['AutoScalingGroups'][0]['LaunchConfigurationName']
+        PolicyType = [a for a in asinfo2['ScalingPolicies'] if a['PolicyType'] == 'StepScaling']
+        print (asinfo2['ScalingPolicies'])
+        if len(PolicyType) > 0:
+            for j in asinfo2['ScalingPolicies']:
+                
+                alarmName = j['Alarms'][0]['AlarmName']
+                watchinfo = cloudwatchinfo(alarmName)
+                if j['StepAdjustments'][0]['ScalingAdjustment'] > 0:
+                    print ("abc")
+                else:
+                    print ("cde")
+                
+        #asinfos.append(asinfo2)
+        #asinfos.append([GroupName,LaunchConfig])
+    #print (asinfos[1]['ScalingPolicies'][0]['Alarms'])
+    
+    #for a in asinfos[1]['ScalingPolicies']:
+    #    if a['StepAdjustments'][0]['StepAdjustments'] > 0:
+    #        addserver = f"" 
+    #return (asinfos[1]['ScalingPolicies'])
 
 def elbtagcheck():
     client = boto3.client('elbv2')
@@ -173,14 +191,13 @@ def test1():
     return (response)
 
 
-def test3():
-    client = boto3.client('ec2')
-    response = client.describe_snapshots(
-
-        MaxResults=10
+def cloudwatchinfo(name):
+    client = boto3.client('cloudwatch')
+    response = client.describe_alarms(
+        AlarmNames = [name]
     )
 
-    return (response['Snapshots'])
-
-for i in test3():
-    print (i['VolumeId'])
+    for i in response['MetricAlarms']:
+        return ([i['Statistic'],i['Period'],i['Threshold']])
+    
+print (asinfos('test'))

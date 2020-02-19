@@ -3,6 +3,7 @@
 import sys
 import boto3
 import re
+import time
 from botocore.exceptions import ClientError
 
 def insidsplit(description):
@@ -41,19 +42,21 @@ def tagcheckInsert(response):
 
         if instanceid:
             CreateTags(instanceid[0],a.get('SnapshotId'))
-            print (("%s Tag를 %s SnapshotID에 입력하였습니다") %(instanceid[0], a.get('SnapshotId')))
+            print (f"{instanceid[0]} Tag를 {a.get('SnapshotId')} SnapshotID에 입력하였습니다")
 
 def createSnapshotTag():
+    starttime = time.time()
     ec2 = boto3.client('ec2')
     response = ec2.describe_snapshots(OwnerIds=['self'],MaxResults=1000)
     tagcheckInsert(response)
 
+    print (time.time() - starttime)
     while True: 
-        ntoken = response['NextToken']
-        response = ec2.describe_snapshots(OwnerIds=['self'],MaxResults=1000,NextToken=ntoken)
-        tagcheckInsert(response)
         try:
-            test = response['NextToken']
+            ntoken = response['NextToken']
+            response = ec2.describe_snapshots(OwnerIds=['self'],MaxResults=1000,NextToken=ntoken)
+            tagcheckInsert(response)
+            print (time.time() - starttime)
             input("계속하시려면 Enter 를 눌러주세요")
         except KeyError:
             sys.exit()
@@ -79,10 +82,10 @@ def amitagcreate():
             if tag:
                 img = ec2r.Image(i['ImageId'])
                 imgtag = img.create_tags(Tags=[{'Key': 'System', 'Value' : tag[0]}])
-                print ("%s 이미지 태그 %s 등록하였습니다." %(i['ImageId'],imgtag))
+                print (f"{i['ImageId']} 이미지 태그 {tag[0]} 등록하였습니다.") 
 
 
 
 
-#createSnapshotTag()
-#amitagcreate()
+createSnapshotTag()
+amitagcreate()

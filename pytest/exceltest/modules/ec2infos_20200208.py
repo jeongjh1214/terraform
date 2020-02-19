@@ -49,12 +49,11 @@ def createSnapshotTag():
     tagcheckInsert(response)
 
     while True: 
-        ntoken = response['NextToken']
-        response = ec2.describe_snapshots(OwnerIds=['self'],MaxResults=1000,NextToken=ntoken)
-        tagcheckInsert(response)
         try:
-            test = response['NextToken']
-            input("계속하시려면 Enter 를 눌러주세요")
+            ntoken = response['NextToken']
+            ntoken = response['NextToken']
+            response = ec2.describe_snapshots(OwnerIds=['self'],MaxResults=1000,NextToken=ntoken)
+            tagcheckInsert(response)
         except KeyError:
             sys.exit()
         
@@ -84,5 +83,5 @@ def amitagcreate():
 
 
 
-#createSnapshotTag()
-#amitagcreate()
+createSnapshotTag()
+amitagcreate()
