@@ -37,36 +37,7 @@ resource "aws_instance" "this" {
   subnet_id         = var.subnet_ids[count.index]
   key_name          = var.keypair_name
   vpc_security_group_ids = [aws_security_group.ec2.id]
-
-
-  connection {
-	host = self.host_id
-	user = "ec2-user"
-	type = "ssh"
-	private_key = file("jaehoon-test1.pem")
-	timeout = "2m"
-  }
-  
-  provisioner "remote-exec" {
-    inline = [
-	"sudo yum update",
-	"sudo yum install -y python",
-	]
-    }
-
-  provisioner "local-exec" {
-    command = <<EOF
-	echo "[demo]" > inventory
-	echo "${self.public_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=/home/ec2-user/.ssh/${var.keypair_name}" >> inventory
-    EOF
-}
-
-  provisioner "local-exec" {
-    command = <<EOF
-	ANSIBLE_HOST_KEY_CHECKING=False \
-	ansible-playbook -i inventory playbook.yml
-	EOF
-    }
+  user_data         = file("install_apache.sh")
 
   associate_public_ip_address = var.associate_public_ip_address 
 

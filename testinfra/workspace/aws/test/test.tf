@@ -1,17 +1,17 @@
 locals { 
-  azs              = ["eu-west-3a", "eu-west-3b"]
+  azs              = ["ap-northeast-2a", "ap-northeast-2c"]
 }
 
 module "vpc" {
   source = "../../../modules/aws/vpc"
 
   name = "test"
-  cidr = "10.1.0.0/16"
+  cidr = "10.178.0.0/16"
 
   azs              = local.azs
-  public_subnets   = ["10.1.0.0/24", "10.1.1.0/24"] 
-  private_subnets  = ["10.1.2.0/24", "10.1.3.0/24"]
-  database_subnets = ["10.1.4.0/24", "10.1.5.0/24"]
+  public_subnets   = ["10.178.0.0/24", "10.178.1.0/24"] 
+  private_subnets  = ["10.178.2.0/24", "10.178.3.0/24"]
+  #database_subnets = ["10.178.4.0/24", "10.178.5.0/24"]
 
   tags = {
     "TerraformManaged" = "true"
@@ -30,8 +30,8 @@ module "ec2_test" {
   azs                 = local.azs
   subnet_ids          = flatten([module.vpc.public_subnets_ids])
   
-  ingress_from_ports  = 80
-  ingress_to_ports    = 80
+  ingress_from_ports  = 22 
+  ingress_to_ports    = 22
   ingress_protocol    = "tcp"
   ingress_cidr_blocks = ["0.0.0.0/0"]
   
@@ -59,8 +59,8 @@ module "ec2_test_pri" {
   azs                 = local.azs
   subnet_ids          = flatten([module.vpc.private_subnets_ids])
   
-  ingress_from_ports  = 80
-  ingress_to_ports    = 80
+  ingress_from_ports  = 22
+  ingress_to_ports    = 22
   ingress_protocol    = "tcp"
   ingress_cidr_blocks = ["0.0.0.0/0"]
   

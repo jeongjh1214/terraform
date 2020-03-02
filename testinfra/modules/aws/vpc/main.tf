@@ -216,10 +216,10 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private[count.index].id
 }
 
-resource "aws_route_table_association" "database" {
-  count = length(var.database_subnets)
-
-  subnet_id      = aws_subnet.database[count.index].id
-  route_table_id = aws_route_table.private[count.index].id
-}
+#resource "aws_route_table_association" "database" {
+#  count = length(var.database_subnets)
+#
+#  subnet_id      = aws_subnet.database[count.index].id
+#  route_table_id = aws_route_table.private[count.index].id
+#}
 

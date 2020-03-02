@@ -29,5 +29,5 @@ data "aws_ami" "amazon_linux" {
 }
 
 variable "keypair_name" {
-  default = "jaehoon-test"
+  default = "jaehoon-test1"
 }

@@ -40,6 +40,10 @@ module "was_sg" {
     {
       rule                     = "http-8080-tcp"
       source_security_group_id = "${module.alb_pub_sg.this_security_group_id}"
+    },
+    {
+      rule                     = "ssh-tcp"
+      source_security_group_id = "${module.alb_pub_sg.this_security_group_id}"
     }
   ]
   number_of_computed_ingress_with_source_security_group_id = 1
@@ -86,8 +90,6 @@ module "alb_pub" {
       target_group_index = 0
     }
   ]
-
-  target_id = module.ec2_was_cluster.id
 
   tags = {
     "System" = "jjhtest"
