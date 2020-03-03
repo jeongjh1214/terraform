@@ -1,0 +1,2 @@
+[dev]
+10.3.2.218 ansible_ssh_user=ec2-user ansible_ssh_private_key_file=/home/ec2-user/.ssh/jaehoon-test1.pem ansible_ssh_extra_args='-o ProxyCommand="ssh -W %h:%p ec2-user@13.124.60.124 -i /home/ec2-user/.ssh/jaehoon-test1.pem -o StrictHostKeyChecking=no"'

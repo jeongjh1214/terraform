@@ -1,0 +1,23 @@
+---
+- hosts: dev 
+
+  tasks:
+  - name: Wait for system to become reachable over ec2
+    wait_for_connection:
+        timeout: 300
+
+  - name: ping
+    ping:
+
+  - name: install packages
+    yum: name={{ item }} update_cache=yes state=latest
+    with_items:
+      - git
+    become: true
+
+  - name: install nginx
+    yum: name={{ item }} update_cache=yes state=latest
+    with_items:
+      - httpd 
+    become: true
+
