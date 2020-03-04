@@ -1,0 +1,40 @@
+---
+- hosts: dev 
+  gather_facts: no
+
+  tasks:
+  - name: ping
+    ping:
+
+  - name: packages
+    yum:
+      state: latest
+      update_cache: yes
+      name: 
+        - git
+    become: true
+
+  - name: httpd 
+    yum:
+      state: latest
+      update_cache: yes
+      name:
+        - httpd
+        - mysql
+    become: true
+
+  - name: mysql 
+    yum:
+      state: latest
+      update_cache: yes
+      name:
+        - mysql
+    become: true
+
+  - name: php 
+    yum: 
+      state: latest
+      update_cache: yes
+      name:
+        - php
+    become: true

@@ -1,5 +1,6 @@
 ---
 - hosts: dev 
+  gather_facts: no
 
   tasks:
   - name: Wait for system to become reachable over ec2
@@ -21,3 +22,14 @@
       - httpd 
     become: true
 
+  - name: install mysql 
+    yum: name={{ item }} update_cache=yes state=latest
+    with_items:
+      - mysql 
+    become: true
+
+  - name: install php 
+    yum: name={{ item }} update_cache=yes state=latest
+    with_items:
+      - php
+    become: true
