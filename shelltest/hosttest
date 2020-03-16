@@ -1,0 +1,3 @@
+#!/bin/sh
+nametest=`cat test | grep '^NETWORKING'`
+sed -i "s#$nametest#NETWORKING=no#g" test

@@ -20,7 +20,6 @@
       update_cache: yes
       name:
         - httpd
-        - mysql
     become: true
 
   - name: mysql 
