@@ -1,0 +1,6 @@
+#!/bin/sh
+
+for i in $(cat ii)
+do
+	echo ${i[0]}
+done

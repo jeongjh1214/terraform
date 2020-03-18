@@ -3,7 +3,6 @@
 import sys
 import boto3
 from botocore.exceptions import ClientError
-from modules.holiday import holidaycheck
 
 ec2 = boto3.client('ec2')
 
